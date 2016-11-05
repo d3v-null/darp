@@ -38,11 +38,11 @@ Play around with the scanner
 python -m arp_scan
 ```
 ```python
-alerts {'added': ['5c:0a:5b:97:1e:54', '5c:f9:38:a8:53:ae', 'ec:1a:59:ca:9b:a1', 'd8:50:e6:31:c8:70', 'ec:1a:59:ca:9b:a1']}
+alerts {'added': ['aa:bb:cc:dd:ee:ff']}
 ```
 
 Roadmap
 ----
 
-[ ] Make alerts a bit fancier with configurable device "owner"
-[ ] Alerts show last seen stamp
+- [ ] Make alerts a bit fancier with configurable device "owner"
+- [ ] Alerts show last seen stamp
