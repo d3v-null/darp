@@ -8,7 +8,9 @@ import re
 class ArpScan(object):
     """ Wrapper for the ArpScan CLI utility """
     default_args = {
-        'localnet': True
+        'localnet': True,
+        'retry': 5,
+        'timeout': 3000
     }
 
     option_properties = {
@@ -73,7 +75,7 @@ class ArpScan(object):
             raise UserWarning("nonzero return code (%d). stderr: %s" % (returncode, stderr))
 
         self.results = self.parse(stdout)
-        print self.results
+        # print self.results
 
         # return self.parse(stdout)
 

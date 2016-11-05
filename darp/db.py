@@ -11,7 +11,7 @@ class DBWrapper(object):
 
     #TODO: finish DBWrapper
 
-    def insert_sighting(self, mac, address, name, stamp=None):
+    def insert_sighting(self, mac, address, name=None, stamp=None):
         """ Inserts a sighting into the database """
         if not mac:
             return
@@ -45,6 +45,13 @@ class DBWrapper(object):
         stamp_sightings = sightings.search(where('stamp') == stamp)
         if stamp_sightings:
             return stamp_sightings
+
+    def latest_scan(self):
+        sightings = self.database.table('sightings')
+        stamps = set([sighting.get('stamp') for sighting in sightings.all()])
+        if stamps:
+            latest_stamp = sorted(stamps)[-1]
+            return self.stamped_sightings(latest_stamp)
 
     def purge(self):
         self.database.purge_tables()

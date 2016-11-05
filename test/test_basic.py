@@ -5,6 +5,7 @@ import unittest
 import darp
 from darp.arp_scan import ArpScan
 from darp.db import DBWrapper
+from darp.diff import ScanDiff
 
 class ArpScanTestCase(unittest.TestCase):
     """ Test case for ArpScan class """
@@ -13,7 +14,7 @@ class ArpScanTestCase(unittest.TestCase):
         pass
 
     def test_parse(self):
-        """ Tests the parse function of the ArpScan class """
+        """ Tests the parse function of the ArpScan class in arp_scan module """
         example_arp_scan_out = "\n".join([
             "Interface: en0, datalink type: EN10MB (Ethernet)",
             "Starting arp-scan 1.9 with 256 hosts (http://www.nta-monitor.com/tools/arp-scan/)",
@@ -39,7 +40,7 @@ class ArpScanTestCase(unittest.TestCase):
         self.assertEquals(test_parsed, expected_parsed)
 
 class DBWrapperTestCase(unittest.TestCase):
-    """ Test case for DBWrapper class """
+    """ Test case for DBWrapper class in db module """
     def setUp(self):
         self.dbwrapper = DBWrapper("darp_db_test.json")
         self.dbwrapper.purge()
@@ -70,7 +71,38 @@ class DBWrapperTestCase(unittest.TestCase):
         self.assertEquals(sightings, expected_sightings)
         # expected_sightings =
 
+    def testLatestScan(self):
+        latest_scan = self.dbwrapper.latest_scan()
+        expected_latest_scan = [{u'stamp': u'2016-11-5_11-53-00', u'mac': u'aa:bb:cc:dd:ee:ff', u'name': u'(Unknown)', u'address': u'10.1.1.1'}]
+        self.assertEquals(latest_scan, expected_latest_scan)
 
+class ScanDiffTestCase(unittest.TestCase):
+    """ Test case for ScanDiff class in diff module """
+    def setUp(self):
+        self.old_scan = [
+            {'address': '10.1.1.1',
+            'mac': 'aa:bb:cc:dd:ee:ff',
+            'name': '(Unknown)'},
+            {'address': '10.1.1.10',
+            'mac': 'bb:cc:dd:ee:ff:aa',
+            'name': 'Apple, Inc'}
+        ]
+        self.new_scan = [
+            {'address': '10.1.1.1',
+            'mac': 'aa:bb:cc:dd:ee:ff',
+            'name': '(Unknown)'},
+            {'address': '10.1.1.12',
+            'mac': 'cc:dd:ee:ff:aa:bb',
+            'name': 'SAMSUNG ELECTRO-MECHANICS CO., LTD. (DUP: 1)'}
+        ]
+        self.diff = ScanDiff(self.old_scan, self.new_scan)
+
+    def testMacDifference(self):
+        added, removed = self.diff.mac_difference()
+        expected_added = ['cc:dd:ee:ff:aa:bb']
+        expected_removed = ['bb:cc:dd:ee:ff:aa']
+        self.assertEquals(added, expected_added)
+        self.assertEquals(removed, expected_removed)
 
 if __name__ == '__main__':
     unittest.main()
