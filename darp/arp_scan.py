@@ -39,7 +39,7 @@ class ArpScan(object):
     }
 
     re_interface = r'Interface: (?P<interface>[^\s,]*),?'
-    re_device = r'(?P<address>[0-9.]*)\s(?P<mac>[0-9a-f:]{17})(?:\s(?P<name>\S*))'
+    re_device = r'(?P<address>[0-9.]*)\s(?P<mac>[0-9a-f:]{17})(?:\s(?P<name>\S[\S\s]*\S))'
 
     def __init__(self, **kwargs):
         """ Creates ArpScan object and performs scan, parsing and storing results """

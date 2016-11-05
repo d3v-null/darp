@@ -4,7 +4,7 @@ import unittest
 
 import darp
 from darp.arp_scan import ArpScan
-
+from darp.db import DBWrapper
 
 class ArpScanTestCase(unittest.TestCase):
     """ Test case for ArpScan class """
@@ -32,11 +32,35 @@ class ArpScanTestCase(unittest.TestCase):
                 'name': '(Unknown)'},
                 {'address': '10.1.1.10',
                 'mac': 'bb:cc:dd:ee:ff:aa',
-                'name': 'Apple,'}
+                'name': 'Apple, Inc'}
             ],
             'interface': 'en0'
         }
         self.assertEquals(test_parsed, expected_parsed)
+
+class DBWrapperTestCase(unittest.TestCase):
+    """ Test case for DBWrapper class """
+    def setUp(self):
+        self.dbwrapper = DBWrapper("darp_db_test.json")
+        self.dbwrapper.purge()
+        self.stamp = '2016-11-5_11-53-00'
+        self.dbwrapper.insert_sighting(
+            name="(Unknown)",
+            address="10.1.1.1",
+            mac="aa:bb:cc:dd:ee:ff",
+            stamp=self.stamp
+        )
+
+    def testLastSighting(self):
+        stamp = self.dbwrapper.last_sighting("aa:bb:cc:dd:ee:ff").get('stamp')
+        expected_stamp = self.stamp
+        self.assertEqual(stamp, expected_stamp)
+
+        stamp = self.dbwrapper.last_sighting("ff:ff:ff:ff:ff:ff")
+        expected_stamp = None
+        self.assertEqual(stamp, expected_stamp)
+
+
 
 if __name__ == '__main__':
     unittest.main()
