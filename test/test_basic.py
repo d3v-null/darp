@@ -44,21 +44,31 @@ class DBWrapperTestCase(unittest.TestCase):
         self.dbwrapper = DBWrapper("darp_db_test.json")
         self.dbwrapper.purge()
         self.stamp = '2016-11-5_11-53-00'
-        self.dbwrapper.insert_sighting(
+        self.mac = 'aa:bb:cc:dd:ee:ff'
+        self.sighting = dict(
             name="(Unknown)",
             address="10.1.1.1",
-            mac="aa:bb:cc:dd:ee:ff",
+            mac=self.mac,
             stamp=self.stamp
+        )
+        self.dbwrapper.insert_sighting(
+            **self.sighting
         )
 
     def testLastSighting(self):
-        stamp = self.dbwrapper.last_sighting("aa:bb:cc:dd:ee:ff").get('stamp')
+        stamp = self.dbwrapper.last_sighting(self.mac).get('stamp')
         expected_stamp = self.stamp
         self.assertEqual(stamp, expected_stamp)
 
         stamp = self.dbwrapper.last_sighting("ff:ff:ff:ff:ff:ff")
         expected_stamp = None
         self.assertEqual(stamp, expected_stamp)
+
+    def testStampedSightings(self):
+        sightings = self.dbwrapper.stamped_sightings(self.stamp)
+        expected_sightings = [self.sighting]
+        self.assertEquals(sightings, expected_sightings)
+        # expected_sightings =
 
 
 
