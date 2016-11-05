@@ -1,0 +1,6 @@
+
+example_out.txt
+build/
+dist/
+*.egg-info
+*.pyc
