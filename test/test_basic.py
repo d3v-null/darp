@@ -104,5 +104,8 @@ class ScanDiffTestCase(unittest.TestCase):
         self.assertEquals(added, expected_added)
         self.assertEquals(removed, expected_removed)
 
+#TODO: test last_name
+#TODO: test owner functions
+
 if __name__ == '__main__':
     unittest.main()

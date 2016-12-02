@@ -35,14 +35,23 @@ python test/test_basic.py
 Play around with the scanner
 
 ```bash
-python -m arp_scan
+python -m darp --set-owners '{"12:34:56:78:9a:bc":"Housemate A"}'
 ```
 ```python
-alerts {'added': ['aa:bb:cc:dd:ee:ff']}
+ -> added
+owner        mac                name      
+-----------  -----------------  ----------
+Housemate A  12:34:56:78:9a:bc  Apple, Inc
+ -> removed
+owner        mac                name
+------       -----------------  -----------------------------------
+Housemate B  bc:12:34:56:78:9a  SAMSUNG ELECTRO-MECHANICS CO., LTD.
 ```
 
 Roadmap
 ----
 
-- [ ] Make alerts a bit fancier with configurable device "owner"
+- [x] Make alerts a bit fancier with configurable device "owner"
 - [ ] Alerts show last seen stamp
+- [ ] handle duplicates in scan better
+- [ ] use nmap to determine hostnames, instead of manufacturer name
