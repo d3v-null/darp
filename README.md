@@ -8,6 +8,7 @@
 
 A simple Python utility for detecting changes in devices connected to the local network using arp-scan (short for delta-arp).
 Useful for finding out which of your housemates are home
+Darp: Enabling musicians with crippling anxiety since 2016
 
 Requirements
 ----
@@ -32,7 +33,7 @@ sudo python setup.py install
 python test/test_basic.py
 ```
 
-Play around with the scanner
+Play around with the scanner. if there has been an update, then something like this will print
 
 ```bash
 python -m darp --set-owners '{"12:34:56:78:9a:bc":"Housemate A"}'
@@ -46,7 +47,13 @@ Housemate A  12:34:56:78:9a:bc  Apple, Inc
 owner        mac                name
 ------       -----------------  -----------------------------------
 Housemate B  bc:12:34:56:78:9a  SAMSUNG ELECTRO-MECHANICS CO., LTD.
+-> static
+owner        mac                name
+------       -----------------  -----------------------------------
+Housemate C  9a:bc:12:34:56:78  Azurewave Technologies, Inc.
 ```
+
+This means that housemate A has recently connected to the network, housemate B has recently left, and housemate C has stayed on the network
 
 Roadmap
 ----
