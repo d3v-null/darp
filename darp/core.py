@@ -8,6 +8,7 @@ from arp_scan import ArpScan
 from helpers import get_safe_timestamp
 from tabulate import tabulate
 import json
+import time
 
 def set_owners(database_path, owners_spec_json):
     """ Configures the database to associate the specified macs and owners """
@@ -67,12 +68,46 @@ def refresh_db(database_path, arp_scan_settings):
 
     return alerts
 
+def print_alerts(alerts):
+    """ prints a given alerts dictionary """
+    if alerts:
+        print "alerts"
+        if 'added' in alerts:
+            print ' -> added'
+            print tabulate(alerts['added'], headers='keys')
+            # for device in alerts['added']:
+            #     print " -->", device
+            alerts.pop('added')
+        if 'removed' in alerts:
+            print " -> removed"
+            print tabulate(alerts['removed'], headers='keys')
+            # for device in alerts['removed']:
+            #     print " -->", device
+            alerts.pop('removed')
+        if 'static' in alerts:
+            print " -> static"
+            print tabulate(alerts['static'], headers='keys')
+            alerts.pop('static')
+        if alerts:
+            print " -> other"
+            for other_key, other_value in alerts.items():
+                print " -->", other_key, other_value
+    else:
+        print "no alerts"
+
 def main():
     """ Main function for Darp core """
     parser = argparse.ArgumentParser(description="detect changes on a subnet")
-    parser.add_argument('--db', help='The path of the database. e.g. darp_db.json',
-                        default='darp_db_default.json')
-    parser.add_argument('--set-owners', help='Associates a mac with a persistent owner (specify with JSON)',)
+    parser.add_argument(
+        '--db',
+        help='The path of the database. e.g. darp_db.json',
+        default='darp_db_default.json')
+    parser.add_argument('--set-owners',
+        help='Associates a mac with a persistent owner (specify with JSON) e.g.\
+ --set-owners \'{"12:34:56:78:9a:bc":"Housemate A"}\'',)
+    parser.add_argument(
+        '--cycle',
+        help='Instructs Darp to repeatedly check changes forecer')
     args = parser.parse_args()
 
     arp_scan_settings = {}
@@ -85,29 +120,17 @@ def main():
                 owners_spec_json = args.set_owners
                 set_owners(db_path, owners_spec_json)
 
-            alerts = refresh_db(db_path, arp_scan_settings)
-            if alerts:
-                print "alerts"
-                if 'added' in alerts:
-                    print ' -> added'
-                    print tabulate(alerts['added'], headers='keys')
-                    # for device in alerts['added']:
-                    #     print " -->", device
-                    alerts.pop('added')
-                if 'removed' in alerts:
-                    print " -> removed"
-                    print tabulate(alerts['removed'], headers='keys')
-                    # for device in alerts['removed']:
-                    #     print " -->", device
-                    alerts.pop('removed')
-                if 'static' in alerts:
-                    print " -> static"
-                    print tabulate(alerts['static'], headers='keys')
-                    alerts.pop('static')
-                if alerts:
-                    print " -> other"
-                    for other_key, other_value in alerts.items():
-                        print " -->", other_key, other_value
+            if args.cycle:
+                seconds = int(args.cycle)
+                while True:
+                    alerts = refresh_db(db_path, arp_scan_settings)
+                    if alerts:
+                        print_alerts(alerts)
+                    time.sleep(seconds)
+            else:
+                alerts = refresh_db(db_path, arp_scan_settings)
+                print_alerts(alerts)
+
 
 if __name__ == '__main__':
     main()

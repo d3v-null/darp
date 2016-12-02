@@ -38,7 +38,7 @@ Play around with the scanner. if there has been an update, then something like t
 ```bash
 python -m darp --set-owners '{"12:34:56:78:9a:bc":"Housemate A"}'
 ```
-```python
+```
  -> added
 owner        mac                name      
 -----------  -----------------  ----------
@@ -54,6 +54,8 @@ Housemate C  9a:bc:12:34:56:78  Azurewave Technologies, Inc.
 ```
 
 This means that housemate A has recently connected to the network, housemate B has recently left, and housemate C has stayed on the network
+
+To cycle darp forever, use the `--cycle <seconds>` flag. to cancel Darp, use `ctrl-c`
 
 Roadmap
 ----
