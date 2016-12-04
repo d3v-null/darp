@@ -34,6 +34,7 @@ python test/test_basic.py
 ```
 
 Play around with the scanner. if there has been an update, then something like this will print
+You most likely have to run this as sudo since arp-scan requires low level access to your devices
 
 ```bash
 python -m darp --set-owners '{"12:34:56:78:9a:bc":"Housemate A"}'
@@ -64,3 +65,4 @@ Roadmap
 - [ ] Alerts show last seen stamp
 - [ ] handle duplicates in scan better
 - [ ] use nmap to determine hostnames, instead of manufacturer name
+- [ ] test for arp-scan installed on system

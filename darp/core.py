@@ -49,29 +49,38 @@ def refresh_db(database_path, arp_scan_settings):
 
     static_macs = [device.get('mac') for device in newDevices if 'mac' in device]
 
-    if added_macs:
-        alerts['added'] = []
-        for added_mac in added_macs:
-            alerts['added'].append(dbwrapper.get_meta(added_mac))
-        static_macs = list(set(static_macs) - set(added_macs))
+    if (removed_macs or added_macs):
+        # if there are any alerts at all
 
-    if removed_macs:
-        alerts['removed'] = []
-        for removed_mac in removed_macs:
-            alerts['removed'].append(dbwrapper.get_meta(removed_mac))
+        alerts['stamp'] = stamp
 
-    if static_macs and (removed_macs or added_macs):
-        """ only care about staic macs if there has been a change """
-        alerts['static'] = []
-        for static_mac in static_macs:
-            alerts['static'].append(dbwrapper.get_meta(static_mac))
+        if added_macs:
+            alerts['added'] = []
+            for added_mac in added_macs:
+                alerts['added'].append(dbwrapper.get_meta(added_mac))
+            static_macs = list(set(static_macs) - set(added_macs))
+
+        if removed_macs:
+            alerts['removed'] = []
+            for removed_mac in removed_macs:
+                alerts['removed'].append(dbwrapper.get_meta(removed_mac))
+
+        if static_macs:
+            """ only care about staic macs if there has been a change """
+            alerts['static'] = []
+            for static_mac in static_macs:
+                alerts['static'].append(dbwrapper.get_meta(static_mac))
 
     return alerts
 
 def print_alerts(alerts):
     """ prints a given alerts dictionary """
     if alerts:
-        print "alerts"
+        heading = "alerts"
+        if 'stamp' in alerts:
+            heading += ' at %s' % alerts['stamp']
+            alerts.pop('stamp')
+        print heading
         if 'added' in alerts:
             print ' -> added'
             print tabulate(alerts['added'], headers='keys')
