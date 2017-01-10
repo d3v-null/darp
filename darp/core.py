@@ -1,6 +1,7 @@
 """Core functions for darp"""
 
 import argparse
+from argparse import ArgumentParser
 
 from db import DBWrapper
 from diff import ScanDiff
@@ -106,7 +107,7 @@ def print_alerts(alerts):
 
 def main():
     """ Main function for Darp core """
-    parser = argparse.ArgumentParser(description="detect changes on a subnet")
+    parser = ArgumentParser(description="detect changes on a subnet")
     parser.add_argument(
         '--db',
         help='The path of the database. e.g. darp_db.json',
