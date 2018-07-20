@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-""" Provides ArpScan class, A wrapper for the arp-scan CLI utility"""
+""" Provide ArpScan class, wrap the arp-scan CLI utility. """
 
+import re
 # import sys
 import subprocess
-import re
 
 from six import text_type
 
+
 class ArpScan(object):
-    """ Wrapper for the ArpScan CLI utility """
+    """ Wrapp the ArpScan CLI utility. """
+
     default_args = {
         'localnet': True,
         'retry': 5,
@@ -47,7 +49,6 @@ class ArpScan(object):
 
     def __init__(self, **kwargs):
         """ Create ArpScan object and performs scan, parsing and storing results. """
-
         scan_args = dict(self.default_args.items())
         scan_args.update(**kwargs)
 
@@ -64,6 +65,19 @@ class ArpScan(object):
 
         # return self.parse(stdout)
 
+    def _arp_scan_option(self, option_name, option_type, option_value):
+        assert \
+            isinstance(option_value, option_type), \
+            "value of option %s is of type %s when it should be %s" \
+                % (option_name, type(option_value), option_type)
+        if option_type == bool:
+            if option_value:
+                return "--%s" % option_name
+        elif isinstance(text_type, option_type):
+            return "--%s='%s'" % (option_name, option_value)
+        else:
+            return "--%s=%s" % (option_name, option_value)
+
     def _arp_scan_options(self, scan_args):
         arp_scan_options = ['arp-scan']
         for option_name, properties in self.option_properties.items():
@@ -71,17 +85,10 @@ class ArpScan(object):
                 continue
             option_type = properties.get('type', bool)
             option_value = scan_args[option_name]
-            assert \
-                isinstance(option_value, option_type), \
-                "value of option %s is of type %s when it should be %s" \
-                    % (option_name, type(option_value), option_type)
-            if option_type == bool:
-                if option_value:
-                    arp_scan_options.append("--%s" % option_name)
-            elif isinstance(text_type, option_type):
-                arp_scan_options.append("--%s='%s'" % (option_name, option_value))
-            else:
-                arp_scan_options.append("--%s=%s" % (option_name, option_value))
+            arp_scan_options.append(
+                self._arp_scan_option(option_name, option_type, option_value)
+            )
+
         return arp_scan_options
 
     @classmethod
@@ -109,7 +116,7 @@ class ArpScan(object):
 
 
 def main():
-    """ Main method of arp_scan package """
+    """ Main method of arp_scan package. """
     ArpScan()
 
 if __name__ == '__main__':
