@@ -12,17 +12,6 @@ class ScanDiff(object):
         return [scan.get('mac') for scan in self.old_scan]
 
     def mac_difference(self):
-        added = []
-        removed = []
-        new_macs = self.new_macs
-        if not self.old_scan:
-            return new_macs, removed
-
-        old_macs = self.old_macs
-        for mac in new_macs:
-            if mac not in old_macs:
-                added.append(mac)
-        for mac in old_macs:
-            if mac not in new_macs:
-                removed.append(mac)
-        return added, removed
+        new_macs = set(self.new_macs)
+        old_macs = set(self.old_macs)
+        return list(new_macs - old_macs), list(old_macs - new_macs)
