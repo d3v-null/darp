@@ -5,6 +5,8 @@
 import subprocess
 import re
 
+from six import text_type
+
 class ArpScan(object):
     """ Wrapper for the ArpScan CLI utility """
     default_args = {
@@ -44,10 +46,25 @@ class ArpScan(object):
     re_device = r'(?P<address>[0-9.]*)\s(?P<mac>[0-9a-f:]{17})(?:\s(?P<name>\S[\S\s]*\S))'
 
     def __init__(self, **kwargs):
-        """ Creates ArpScan object and performs scan, parsing and storing results """
+        """ Create ArpScan object and performs scan, parsing and storing results. """
 
         scan_args = dict(self.default_args.items())
         scan_args.update(**kwargs)
+
+        arp_scan_options = self._arp_scan_options(scan_args)
+        subp = subprocess.Popen(arp_scan_options, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = subp.communicate()
+        returncode = subp.returncode
+
+        if returncode != 0:
+            raise UserWarning("nonzero return code (%d). stderr: %s" % (returncode, stderr))
+
+        self.results = self.parse(stdout)
+        # print self.results
+
+        # return self.parse(stdout)
+
+    def _arp_scan_options(self, scan_args):
         arp_scan_options = ['arp-scan']
         for option_name, properties in self.option_properties.items():
             if not option_name in scan_args:
@@ -61,26 +78,15 @@ class ArpScan(object):
             if option_type == bool:
                 if option_value:
                     arp_scan_options.append("--%s" % option_name)
-            elif option_type in [int, float]:
-                arp_scan_options.append("--%s=%s" % (option_name, option_value))
-            elif option_type == str:
+            elif isinstance(text_type, option_type):
                 arp_scan_options.append("--%s='%s'" % (option_name, option_value))
-
-        subp = subprocess.Popen(arp_scan_options, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = subp.communicate()
-        returncode = subp.returncode
-
-        if returncode != 0:
-            raise UserWarning("nonzero return code (%d). stderr: %s" % (returncode, stderr))
-
-        self.results = self.parse(stdout)
-        # print self.results
-
-        # return self.parse(stdout)
+            else:
+                arp_scan_options.append("--%s=%s" % (option_name, option_value))
+        return arp_scan_options
 
     @classmethod
     def parse(cls, out):
-        """ Parses the output of running arp-scan, results in dict """
+        """ Parse the output of running arp-scan, return dict. """
         results = {}
         for line in out.split('\n'):
             if re.match(cls.re_interface, line):
