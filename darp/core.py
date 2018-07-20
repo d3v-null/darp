@@ -25,6 +25,27 @@ def set_owners(database_path, owners_spec_json):
         for mac, owner in owners_spec.items():
             dbwrapper.set_owner(mac, owner)
 
+def generate_mac_alerts(dbwrapper, static, removed, added, stamp):
+    alerts = {}
+    alerts['stamp'] = stamp
+
+    if added:
+        alerts['added'] = []
+        for added_mac in added:
+            alerts['added'].append(dbwrapper.get_meta(added_mac))
+        static = list(set(static) - set(added))
+
+    if removed:
+        alerts['removed'] = []
+        for removed_mac in removed:
+            alerts['removed'].append(dbwrapper.get_meta(removed_mac))
+
+    if static:
+        """ only care about staic macs if there has been a change """
+        alerts['static'] = []
+        for static_mac in static:
+            alerts['static'].append(dbwrapper.get_meta(static_mac))
+
 def refresh_db(database_path, arp_scan_settings):
     """ Refreshes a darp database with the latest scan results, returning alerts """
 
@@ -55,25 +76,7 @@ def refresh_db(database_path, arp_scan_settings):
 
     if (removed_macs or added_macs):
         # if there are any alerts at all
-
-        alerts['stamp'] = stamp
-
-        if added_macs:
-            alerts['added'] = []
-            for added_mac in added_macs:
-                alerts['added'].append(dbwrapper.get_meta(added_mac))
-            static_macs = list(set(static_macs) - set(added_macs))
-
-        if removed_macs:
-            alerts['removed'] = []
-            for removed_mac in removed_macs:
-                alerts['removed'].append(dbwrapper.get_meta(removed_mac))
-
-        if static_macs:
-            """ only care about staic macs if there has been a change """
-            alerts['static'] = []
-            for static_mac in static_macs:
-                alerts['static'].append(dbwrapper.get_meta(static_mac))
+        alerts = generate_mac_alerts(dbwrapper, static_macs, removed_macs, added_macs, stamp)
 
     return alerts
 
