@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-import argparse
 import json
 import time
 from argparse import ArgumentParser
@@ -15,7 +14,7 @@ from tabulate import tabulate
 
 
 def set_owners(database_path, owners_spec_json):
-    """ Configures the database to associate the specified macs and owners """
+    """ Configure the database to associate the specified macs and owners. """
     # print "decoding json spec", owners_spec_json
     owners_spec = json.loads(owners_spec_json)
     # print "owners_spec", owners_spec
@@ -25,29 +24,47 @@ def set_owners(database_path, owners_spec_json):
         for mac, owner in owners_spec.items():
             dbwrapper.set_owner(mac, owner)
 
-def generate_mac_alerts(dbwrapper, static, removed, added, stamp):
+def generate_mac_alerts(dbwrapper, oldDevices, newDevices, stamp):
+    """ Generate alerts based on new and old devices detected. """
     alerts = {}
+
+    # print "newDevices", newDevices
+    # print "oldDevices", oldDevices
+
+    # compare scans for alerts
+    diff = ScanDiff(oldDevices, newDevices)
+    added_macs, removed_macs = diff.mac_difference()
+
+    static_macs = [device.get('mac') for device in newDevices if 'mac' in device]
+
+    if not (removed_macs or added_macs):
+        return alerts
+
+    # if there are any alerts at all
+
     alerts['stamp'] = stamp
 
-    if added:
+    if added_macs:
         alerts['added'] = []
-        for added_mac in added:
+        for added_mac in added_macs:
             alerts['added'].append(dbwrapper.get_meta(added_mac))
-        static = list(set(static) - set(added))
+        static_macs = list(set(static_macs) - set(added_macs))
 
-    if removed:
+    if removed_macs:
         alerts['removed'] = []
-        for removed_mac in removed:
+        for removed_mac in removed_macs:
             alerts['removed'].append(dbwrapper.get_meta(removed_mac))
 
-    if static:
+    if static_macs:
         """ only care about staic macs if there has been a change """
         alerts['static'] = []
-        for static_mac in static:
+        for static_mac in static_macs:
             alerts['static'].append(dbwrapper.get_meta(static_mac))
 
+    return alerts
+
 def refresh_db(database_path, arp_scan_settings):
-    """ Refreshes a darp database with the latest scan results, returning alerts """
+    """ Refresh a darp database with the latest scan results. """
 
     alerts = {}
     dbwrapper = DBWrapper(database_path)
@@ -65,23 +82,12 @@ def refresh_db(database_path, arp_scan_settings):
     for device in newDevices:
         dbwrapper.insert_sighting(stamp=stamp, **device)
 
-    # print "newDevices", newDevices
-    # print "oldDevices", oldDevices
-
-    # compare scans for alerts
-    diff = ScanDiff(oldDevices, newDevices)
-    added_macs, removed_macs = diff.mac_difference()
-
-    static_macs = [device.get('mac') for device in newDevices if 'mac' in device]
-
-    if (removed_macs or added_macs):
-        # if there are any alerts at all
-        alerts = generate_mac_alerts(dbwrapper, static_macs, removed_macs, added_macs, stamp)
+    alerts = generate_mac_alerts(dbwrapper, oldDevices, newDevices, stamp)
 
     return alerts
 
 def print_alerts(alerts):
-    """ prints a given alerts dictionary """
+    """ Print a given alerts dictionary. """
     if not alerts:
         print("no alerts")
         return
@@ -121,7 +127,7 @@ def process_args(args, arp_scan_settings):
             print_alerts(alerts)
 
 def main():
-    """ Main function for Darp core """
+    """ Main function for Darp core. """
     parser = ArgumentParser(description="detect changes on a subnet")
     parser.add_argument(
         '--db',
