@@ -91,12 +91,13 @@ def print_alerts(alerts):
 
     out = "alerts"
     for type_ in ['stamp', 'added', 'removed', 'static']:
-        if type_ in alerts:
-            if type_ == 'stamp':
-                out += ' at %s' % alerts.pop(type_)
-            else:
-                out += '\n-> %s' % type_
-                out += '\n%s' % tabulate(alerts.pop(type_), headers='keys')
+        if type_ not in alerts:
+            continue
+        if type_ == 'stamp':
+            out += ' at %s' % alerts.pop(type_)
+            continue
+        out += '\n-> %s' % type_
+        out += '\n%s' % tabulate(alerts.pop(type_), headers='keys')
 
     if alerts:
         out += '\n-> other'
