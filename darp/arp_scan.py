@@ -50,22 +50,21 @@ class ArpScan(object):
         scan_args.update(**kwargs)
         arp_scan_options = ['arp-scan']
         for option_name, properties in self.option_properties.items():
-            if option_name in scan_args:
-                option_type = properties.get('type', bool)
-                option_value = scan_args[option_name]
-                assert \
-                    isinstance(option_value, option_type), \
-                    "value of option %s is of type %s when it should be %s" \
-                        % (option_name, type(option_value), option_type)
-                if option_type == bool:
-                    if option_value:
-                        arp_scan_options.append("--%s" % option_name)
-                elif option_type == int:
-                    arp_scan_options.append("--%s=%d" % (option_name, option_value))
-                elif option_type == float:
-                    arp_scan_options.append("--%s=%f" % (option_name, option_value))
-                elif option_type == str:
-                    arp_scan_options.append("--%s=\"%s\"" % (option_name, option_value))
+            if not option_name in scan_args:
+                continue
+            option_type = properties.get('type', bool)
+            option_value = scan_args[option_name]
+            assert \
+                isinstance(option_value, option_type), \
+                "value of option %s is of type %s when it should be %s" \
+                    % (option_name, type(option_value), option_type)
+            if option_type == bool:
+                if option_value:
+                    arp_scan_options.append("--%s" % option_name)
+            elif option_type in [int, float]:
+                arp_scan_options.append("--%s=%s" % (option_name, option_value))
+            elif option_type == str:
+                arp_scan_options.append("--%s='%s'" % (option_name, option_value))
 
         subp = subprocess.Popen(arp_scan_options, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = subp.communicate()

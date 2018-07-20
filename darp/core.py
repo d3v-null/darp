@@ -105,6 +105,25 @@ def print_alerts(alerts):
     else:
         print "no alerts"
 
+def process_args(args, arp_scan_settings):
+    if args.db:
+        db_path = args.db
+
+        if args.set_owners:
+            owners_spec_json = args.set_owners
+            set_owners(db_path, owners_spec_json)
+
+        if args.cycle:
+            seconds = int(args.cycle)
+            while True:
+                alerts = refresh_db(db_path, arp_scan_settings)
+                if alerts:
+                    print_alerts(alerts)
+                time.sleep(seconds)
+        else:
+            alerts = refresh_db(db_path, arp_scan_settings)
+            print_alerts(alerts)
+
 def main():
     """ Main function for Darp core """
     parser = ArgumentParser(description="detect changes on a subnet")
@@ -123,23 +142,8 @@ def main():
     arp_scan_settings = {}
 
     if args:
-        if args.db:
-            db_path = args.db
+        process_args(args, arp_scan_settings)
 
-            if args.set_owners:
-                owners_spec_json = args.set_owners
-                set_owners(db_path, owners_spec_json)
-
-            if args.cycle:
-                seconds = int(args.cycle)
-                while True:
-                    alerts = refresh_db(db_path, arp_scan_settings)
-                    if alerts:
-                        print_alerts(alerts)
-                    time.sleep(seconds)
-            else:
-                alerts = refresh_db(db_path, arp_scan_settings)
-                print_alerts(alerts)
 
 
 if __name__ == '__main__':
