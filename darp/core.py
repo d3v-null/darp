@@ -50,16 +50,14 @@ def generate_mac_alerts(dbwrapper, oldDevices, newDevices, stamp):
             alerts['added'].append(dbwrapper.get_meta(added_mac))
         static_macs = list(set(static_macs) - set(added_macs))
 
-    if removed_macs:
-        alerts['removed'] = []
-        for removed_mac in removed_macs:
-            alerts['removed'].append(dbwrapper.get_meta(removed_mac))
-
-    if static_macs:
-        """ only care about staic macs if there has been a change """
-        alerts['static'] = []
-        for static_mac in static_macs:
-            alerts['static'].append(dbwrapper.get_meta(static_mac))
+    for key, macs in [
+        ('removed', removed_macs),
+        ('static', static_macs)
+    ]:
+        if macs:
+            alerts[key] = []
+            for mac in macs:
+                alerts[key].append(dbwrapper.get_meta(mac))
 
     return alerts
 
