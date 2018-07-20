@@ -1,15 +1,18 @@
 """Core functions for darp"""
 
-import argparse
-from argparse import ArgumentParser
+from __future__ import print_function
 
-from db import DBWrapper
-from diff import ScanDiff
-from arp_scan import ArpScan
-from helpers import get_safe_timestamp
-from tabulate import tabulate
+import argparse
 import json
 import time
+from argparse import ArgumentParser
+
+from arp_scan import ArpScan
+from db import DBWrapper
+from diff import ScanDiff
+from helpers import get_safe_timestamp
+from tabulate import tabulate
+
 
 def set_owners(database_path, owners_spec_json):
     """ Configures the database to associate the specified macs and owners """
@@ -76,34 +79,24 @@ def refresh_db(database_path, arp_scan_settings):
 
 def print_alerts(alerts):
     """ prints a given alerts dictionary """
+    if not alerts:
+        print("no alerts")
+        return
+
+    out = "alerts"
+    for type_ in ['stamp', 'added', 'removed', 'static']:
+        if type_ in alerts:
+            if type_ == 'stamp':
+                out += ' at %s' % alerts.pop(type_)
+            else:
+                out += '\n-> %s' % type_
+                out += '\n%s' % tabulate(alerts.pop(type_), headers='keys')
+
     if alerts:
-        heading = "alerts"
-        if 'stamp' in alerts:
-            heading += ' at %s' % alerts['stamp']
-            alerts.pop('stamp')
-        print heading
-        if 'added' in alerts:
-            print ' -> added'
-            print tabulate(alerts['added'], headers='keys')
-            # for device in alerts['added']:
-            #     print " -->", device
-            alerts.pop('added')
-        if 'removed' in alerts:
-            print " -> removed"
-            print tabulate(alerts['removed'], headers='keys')
-            # for device in alerts['removed']:
-            #     print " -->", device
-            alerts.pop('removed')
-        if 'static' in alerts:
-            print " -> static"
-            print tabulate(alerts['static'], headers='keys')
-            alerts.pop('static')
-        if alerts:
-            print " -> other"
-            for other_key, other_value in alerts.items():
-                print " -->", other_key, other_value
-    else:
-        print "no alerts"
+        out += '\n-> other'
+        for other_key, other_value in alerts.items():
+            out += "\n--> %s, %s" % (other_key, other_value)
+    print(out)
 
 def process_args(args, arp_scan_settings):
     if args.db:
